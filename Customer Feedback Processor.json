@@ -1,0 +1,569 @@
+{
+  "name": "Customer Feedback Processor",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Customer Feedback Form",
+        "formDescription": "Please tell about your experience.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Rating",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "1"
+                  },
+                  {
+                    "option": "2"
+                  },
+                  {
+                    "option": "3"
+                  },
+                  {
+                    "option": "4"
+                  },
+                  {
+                    "option": "5"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Feedback message",
+              "fieldType": "textarea",
+              "placeholder": "Please give your suggestions here.."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -864,
+        -16
+      ],
+      "id": "543ab3d1-f21a-46fa-a51c-3d46c196c21c",
+      "name": "On form submission",
+      "webhookId": "7c349dde-e1ec-4651-85cb-9bfa57af7658"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "417b7590-a40f-48e8-a511-0c443eb51eb2",
+              "name": "Rating",
+              "value": "={{ $json.Rating }}",
+              "type": "string"
+            },
+            {
+              "id": "da83cab1-11d3-48a7-b755-71831c69cd69",
+              "name": "Name",
+              "value": "={{ $json.Name }}",
+              "type": "string"
+            },
+            {
+              "id": "a3ccb3cc-5b54-4178-85c0-62d93285e8ca",
+              "name": "Email",
+              "value": "={{ $json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "892d5108-feb4-461a-a555-61c8cca81e29",
+              "name": "Feedback message",
+              "value": "={{ $json['Feedback message'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ffaaa72f-187b-42bd-bc2a-eba81b055421",
+              "name": "Date",
+              "value": "={{ new Date().toLocaleDateString(\"en-GB\", { timeZone: \"Asia/Karachi\" }) }}",
+              "type": "string"
+            },
+            {
+              "id": "7c89730c-4ef2-46db-81e1-f23c59363952",
+              "name": "Time",
+              "value": "={{ new Date().toLocaleTimeString(\"en-GB\", { timeZone: \"Asia/Karachi\" }) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -656,
+        -16
+      ],
+      "id": "a084c845-d78a-4c7f-8e21-64fc1fd046b6",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a helpful assistant analyzing customer feedback. Analyze the user's message below and return a JSON object with three keys: \"sentiment\". \"category\", and \"summary\".\n\n- The \"sentiment\" key must be one of these exact strings: \"Positive\", \"Negative\", or \"Neutral\".\n- The \"category\" key must be one of these exact strings: \"Bug Report\", \"Feature Request\", \"General Praise\", or \"Other\"\n- The \"summary\" key should be a concise, one-sentence summary of the user's message.\n\nHere is the user's message:\n{{ $json['Feedback message'] }}\nAnd user's rating: {{ $json.Rating }}\n\n**IMPORTANT: You MUST reply with ONLY the raw JSON object itself, without any surrounding text, explanations, or markdown formatting like \\'\\'\\'json.** ",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -448,
+        -16
+      ],
+      "id": "2752bb75-4cce-4ab4-aee2-5829c60234f4",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -496,
+        192
+      ],
+      "id": "a6007cd8-5324-48cb-bb51-abaf4b66dea2",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "IXRyLjlaWlk48Aq0",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"sentimenet\": \"Negative\",\n  \t\"category\": \"Bug Report\",\n  \"summary\": \"The user is reporting that the checkout button is not working correctly.\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -272,
+        192
+      ],
+      "id": "c3744f31-c2b8-4376-96f7-70cf863f3375",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "content": "## The Intelligent Customer Feedback Processor ",
+        "height": 80,
+        "width": 592,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -496,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "0f5a0aa5-6fab-411d-bb22-71e25703f7ee",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1tL5S1UNatYmLOvqIt6d-Rf9je7neqmR6HgxNyJq0Rmo",
+          "mode": "list",
+          "cachedResultName": "Feedback Form",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tL5S1UNatYmLOvqIt6d-Rf9je7neqmR6HgxNyJq0Rmo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tL5S1UNatYmLOvqIt6d-Rf9je7neqmR6HgxNyJq0Rmo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Edit Fields').item.json.Email }}",
+            "Feedback Message": "={{ $('Edit Fields').item.json['Feedback message'] }}",
+            "Date Submitted": "={{ $('Edit Fields').item.json.Date }}",
+            "Time Submitted": "={{ $('Edit Fields').item.json.Time }}",
+            "Rating": "={{ $('Edit Fields').item.json.Rating }}",
+            "Sentiment": "={{ $json.output.sentimenet }}",
+            "Category": "={{ $json.output.category }}",
+            "Summary": "={{ $json.output.summary }}",
+            "Name": "={{ $('Edit Fields').item.json.Name }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "Rating",
+              "displayName": "Rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Feedback Message",
+              "displayName": "Feedback Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date Submitted",
+              "displayName": "Date Submitted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Time Submitted",
+              "displayName": "Time Submitted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Category",
+              "displayName": "Category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -32,
+        -16
+      ],
+      "id": "59911f84-d217-428d-833d-b24d85d2c344",
+      "name": "Feedback Form",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YkImVOZTFcWcrH4Q",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "07052966-8802-47f4-966b-eb739009da5b",
+              "leftValue": "={{ $json.Sentiment }}",
+              "rightValue": "Neutral",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "39a966dc-2c5b-4d4a-8a80-28322bd31d3f",
+              "leftValue": "={{ $json.Sentiment }}",
+              "rightValue": "Negative",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        176,
+        -16
+      ],
+      "id": "00e11b84-686d-4bd3-8b3d-ed2e27d06dfb",
+      "name": "Sentiment Check"
+    },
+    {
+      "parameters": {
+        "sendTo": "abasitkz92@gmail.com",
+        "subject": "=Low Rating on Feedback with Sentiment {{ $json.Sentiment }}",
+        "emailType": "text",
+        "message": "={{ $json.Name }} has rated {{ $json.Rating }} and the feedback message is {{ $json['Feedback Message'] }}\n\nPlease Contact him at {{ $json.Email }}  \nand try to resolve the issue as soon as possible.",
+        "options": {
+          "appendAttribution": false,
+          "replyTo": "={{ $json.Email }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        -144
+      ],
+      "id": "fe76051b-3147-460c-938b-fdc6aff5f839",
+      "name": "Negative Response",
+      "webhookId": "c8e1e84d-73a4-4046-8da7-27ceadb58aef",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "c4aR6DIveXTFOosm",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "motorolahpslate7@gmail.com",
+        "subject": "=High Rating on Feedback with Sentiment  {{ $json.Sentiment }}",
+        "emailType": "text",
+        "message": "={{ $json.Name }} has rated {{ $json.Rating }} and the feedback message is {{ $json['Feedback Message'] }}\n\nPlease Contact him at {{ $json.Email }}  \nas soon as possible and collect the Testimonial.",
+        "options": {
+          "appendAttribution": false,
+          "replyTo": "={{ $json.Email }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        112
+      ],
+      "id": "7860aee3-8507-48fe-8aaa-3230644458b3",
+      "name": "Positive Response",
+      "webhookId": "c8e1e84d-73a4-4046-8da7-27ceadb58aef",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "c4aR6DIveXTFOosm",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "On form submission": [
+      {
+        "json": {
+          "Rating": "2",
+          "Name": "anna",
+          "Email": "anna@gmail.com",
+          "Feedback message": "Not satisfied.",
+          "submittedAt": "2025-08-19T17:40:30.855-04:00",
+          "formMode": "test"
+        }
+      },
+      {
+        "json": {
+          "Rating": "5",
+          "Name": "Basit",
+          "Email": "basit@gmail.com",
+          "Feedback message": "The product is amazing.",
+          "submittedAt": "2025-08-19T17:28:19.568-04:00",
+          "formMode": "test"
+        }
+      },
+      {
+        "json": {
+          "Rating": "3",
+          "Name": "Rahul",
+          "Email": "Rahul@yahoo.com",
+          "Feedback message": "Just fine, need improvement.",
+          "submittedAt": "2025-08-19T17:28:19.568-04:00",
+          "formMode": "test"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Feedback Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feedback Form": {
+      "main": [
+        [
+          {
+            "node": "Sentiment Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sentiment Check": {
+      "main": [
+        [
+          {
+            "node": "Negative Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Positive Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Negative Response": {
+      "main": [
+        []
+      ]
+    },
+    "Positive Response": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f053f117-2f3e-4945-9034-8e19db8c65c9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7137e24afad1336d5940e35fe4582051d3443118b53239982c51eb30049a61d"
+  },
+  "id": "9UClVOuliGNkq7KM",
+  "tags": []
+}
